@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SpeakAI History</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/static/styles.css">
+  <style>
+    body {
+      background-color: #20232a;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 2rem;
+    }
+    h1 {
+      color: #61dafb;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .entry {
+      background-color: #2c2f36;
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+    .entry h3 {
+      margin-top: 0;
+      color: #ffffff;
+    }
+    .entry p {
+      margin: 0.4rem 0;
+    }
+    .buttons {
+      margin-top: 1rem;
+    }
+    .buttons a, .buttons form button {
+      margin-right: 1rem;
+      padding: 0.4rem 0.8rem;
+      background-color: #61dafb;
+      color: #000;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+    }
+    audio {
+      width: 100%;
+      margin-top: 0.5rem;
+      border-radius: 8px;
+    }
+    .tag {
+      font-size: 0.9rem;
+      color: #bbb;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <h1>🗂 SpeakAI History</h1>
+  {% for row in history %}
+    <div class="entry">
+      <h3>{{ row[1] }}</h3>
+      <p class="tag">📌 {{ row[5] }} | 🕒 {{ row[4][:19].replace('T', ' ') }}</p>
+      <p><strong>Transcript:</strong> {{ row[2][:200] }}...</p>
+      <p><strong>Feedback:</strong> {{ row[3][:300] }}...</p>
+      <audio controls src="/temp/{{ row[1] }}"></audio>
+      <div class="buttons">
+        <a href="/temp/{{ row[1] }}" download>⬇️ Download Audio</a>
+        <a href="/download/txt/{{ row[0] }}">⬇️ Download Transcript</a>
+        <form method="post" action="/delete/{{ row[0] }}" style="display:inline">
+          <button type="submit">🗑️ Delete</button>
+        </form>
+      </div>
+    </div>
+  {% endfor %}
+</body>
+</html>

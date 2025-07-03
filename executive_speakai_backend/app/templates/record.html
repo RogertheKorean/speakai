@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SpeakAI - Record</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/static/styles.css">
+  <style>
+    body {
+      background-color: #2f2f2f;
+      color: #f1f1f1;
+      font-family: sans-serif;
+      padding: 2rem;
+      max-width: 700px;
+      margin: auto;
+    }
+    button {
+      margin: 0.5rem;
+      padding: 0.6rem 1.2rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .start { background-color: #5cb85c; color: white; }
+    .stop { background-color: #d9534f; color: white; }
+    .upload { background-color: #0275d8; color: white; }
+    textarea, input {
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 0.6rem;
+      font-size: 1rem;
+      border-radius: 4px;
+      border: 1px solid #888;
+      background-color: #3d3d3d;
+      color: #fff;
+    }
+    h1, h3, label {
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎤 SpeakAI Recorder</h1>
+  <div>
+    <!-- Buttons to control recording -->
+    <button class="start" onclick="startRecording()">Start Recording</button>
+    <button class="stop" onclick="stopRecording()">Stop</button>
+    <button class="upload" onclick="uploadRecording()">Upload & Transcribe</button>
+  </div>
+
+  <div style="margin-top: 1rem;">
+    <!-- Optional tag input for user context -->
+    <label for="tag">Tag:</label>
+    <input type="text" id="tag" placeholder="e.g. interview or test" />
+  </div>
+
+  <h3>📄 Transcription</h3>
+  <!-- Displays transcription from backend -->
+  <textarea id="transcription" readonly></textarea>
+
+  <h3>🧠 GPT Feedback</h3>
+  <!-- Displays GPT feedback -->
+  <textarea id="feedback" readonly></textarea>
+
+  <h3>▶️ Playback</h3>
+  <!-- Audio playback of the recorded file -->
+  <audio id="player" controls></audio>
+
+  <script>
+    let mediaRecorder;
+    let recordedChunks = []; // Array to collect audio data
+    let lastAudioBlob = null; // Blob to hold final audio
+    let lastFilename = ""; // Track uploaded filename
+
+    // Request microphone access and start recording
+    async function startRecording() {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      recordedChunks = [];
+
+      // Collect data as it's available
+      mediaRecorder.ondataavailable = e => recordedChunks.push(e.data);
+
+      // Once stopped, finalize audio blob
+      mediaRecorder.onstop = () => {
+        lastAudioBlob = new Blob(recordedChunks, { type: "audio/webm" });
+        document.getElementById("player").src = URL.createObjectURL(lastAudioBlob);
+      };
+
+      mediaRecorder.start();
+    }
+
+    // Stop recording if in progress
+    function stopRecording() {
+      if (mediaRecorder && mediaRecorder.state !== "inactive") {
+        mediaRecorder.stop();
+      }
+    }
+
+    // Upload recorded audio and trigger transcription + GPT feedback
+    async function uploadRecording() {
+      if (!lastAudioBlob) return alert("No recording found");
+
+      const formData = new FormData();
+      formData.append("file", lastAudioBlob, "recording.webm");
+
+      // Send audio to backend upload route
+      const res = await fetch("/upload", { method: "POST", body: formData });
+      const data = await res.json();
+
+      // Update UI with results
+      document.getElementById("transcription").value = data.transcription;
+      document.getElementById("feedback").value = data.feedback;
+      lastFilename = data.filename;
+
+      // Save session to history with optional user-defined tag
+      const tag = document.getElementById("tag").value || "untagged";
+      await fetch("/save-history", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename: lastFilename,
+          transcription: data.transcription,
+          feedback: data.feedback,
+          tag: tag
+        })
+      });
+
+      alert("Saved to history.");
+    }
+  </script>
+</body>
+</html>

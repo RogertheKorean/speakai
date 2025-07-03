@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Curriculum</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <h1>📚 Curriculum</h1>
+
+  {% for page in pages %}
+    <div class="page-card">
+      <h2>{{ page.title }}</h2>
+
+      {% if user_dict.get(page.author_id) and user_dict[page.author_id].avatar_url %}
+        <img src="{{ user_dict[page.author_id].avatar_url }}" class="avatar">
+      {% elif user_dict.get(page.author_id) %}
+        <div class="avatar placeholder">{{ user_dict[page.author_id].name[0] }}</div>
+      {% endif %}
+
+      <div>
+        {% for tag in page.tags.split(',') %}
+          <span class="tag">{{ tag.strip() }}</span>
+        {% endfor %}
+      </div>
+
+      <p>{{ page.content }}</p>
+    </div>
+  {% endfor %}
+</body>
+</html>
