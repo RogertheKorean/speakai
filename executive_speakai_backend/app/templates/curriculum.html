@@ -1,30 +1,87 @@
+<!-- templates/curriculum.html -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>Curriculum</title>
-  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="stylesheet" href="/static/style.css">
+  <script defer>
+    function toggleSection(id) {
+      const body = document.getElementById(`section-${id}`);
+      body.style.display = body.style.display === 'none' ? 'block' : 'none';
+    }
+  </script>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      background: #121212;
+      color: white;
+    }
+    .section {
+      margin-bottom: 1.5rem;
+      border: 1px solid #444;
+      border-radius: 10px;
+      padding: 1rem;
+      background: #1e1e1e;
+    }
+    .section-header {
+      cursor: pointer;
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    .page {
+      margin-left: 1rem;
+      padding: 0.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .completed {
+      color: lightgreen;
+    }
+    .viewed {
+      text-decoration: underline dotted;
+    }
+    .icon {
+      width: 1.2rem;
+      text-align: center;
+    }
+    .all-done {
+      background: #2e7d32;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-top: 2rem;
+      text-align: center;
+      font-size: 1.2rem;
+    }
+  </style>
 </head>
 <body>
-  <h1>📚 Curriculum</h1>
+  <h1>📘 Curriculum</h1>
 
-  {% for page in pages %}
-    <div class="page-card">
-      <h2>{{ page.title }}</h2>
-
-      {% if user_dict.get(page.author_id) and user_dict[page.author_id].avatar_url %}
-        <img src="{{ user_dict[page.author_id].avatar_url }}" class="avatar">
-      {% elif user_dict.get(page.author_id) %}
-        <div class="avatar placeholder">{{ user_dict[page.author_id].name[0] }}</div>
-      {% endif %}
-
-      <div>
-        {% for tag in page.tags.split(',') %}
-          <span class="tag">{{ tag.strip() }}</span>
+  {% for section in sections %}
+    <div class="section">
+      <div class="section-header" onclick="toggleSection({{ section.id }})">
+        ▶️ {{ section.title }}
+      </div>
+      <div id="section-{{ section.id }}" style="display: none;">
+        {% for page in section.pages %}
+          <div class="page">
+            <span class="icon">
+              {% if page.type == 'lecture' %}📘{% elif page.type == 'quiz' %}❓{% elif page.type == 'record' %}🎤{% endif %}
+            </span>
+            <a href="/view/{{ page.id }}" class="{% if page.viewed %}viewed{% endif %}">{{ page.title }}</a>
+            {% if page.completed %}<span class="completed">✅</span>{% endif %}
+          </div>
         {% endfor %}
       </div>
-
-      <p>{{ page.content }}</p>
     </div>
   {% endfor %}
+
+  {% if all_done %}
+    <div class="all-done">🎉 All Done! Great job completing all sections.</div>
+  {% endif %}
 </body>
 </html>

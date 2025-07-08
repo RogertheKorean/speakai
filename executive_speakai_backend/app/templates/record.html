@@ -1,3 +1,4 @@
+<!-- templates/record.html (fully restored with inline comments and preserved full functionality) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -42,47 +43,48 @@
 </head>
 <body>
   <h1>🎤 SpeakAI Recorder</h1>
+
+  <!-- Button controls for recording and upload -->
   <div>
-    <!-- Buttons to control recording -->
     <button class="start" onclick="startRecording()">Start Recording</button>
     <button class="stop" onclick="stopRecording()">Stop</button>
     <button class="upload" onclick="uploadRecording()">Upload & Transcribe</button>
   </div>
 
+  <!-- Optional context input from user -->
   <div style="margin-top: 1rem;">
-    <!-- Optional tag input for user context -->
     <label for="tag">Tag:</label>
     <input type="text" id="tag" placeholder="e.g. interview or test" />
   </div>
 
+  <!-- Output: transcription result -->
   <h3>📄 Transcription</h3>
-  <!-- Displays transcription from backend -->
   <textarea id="transcription" readonly></textarea>
 
+  <!-- Output: GPT-generated feedback -->
   <h3>🧠 GPT Feedback</h3>
-  <!-- Displays GPT feedback -->
   <textarea id="feedback" readonly></textarea>
 
+  <!-- Audio playback for user review -->
   <h3>▶️ Playback</h3>
-  <!-- Audio playback of the recorded file -->
   <audio id="player" controls></audio>
 
   <script>
     let mediaRecorder;
-    let recordedChunks = []; // Array to collect audio data
-    let lastAudioBlob = null; // Blob to hold final audio
-    let lastFilename = ""; // Track uploaded filename
+    let recordedChunks = []; // Store audio data during recording
+    let lastAudioBlob = null; // Final recording blob for upload/playback
+    let lastFilename = ""; // Track filename used by backend
 
-    // Request microphone access and start recording
+    // Start recording using MediaRecorder API
     async function startRecording() {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorder = new MediaRecorder(stream);
       recordedChunks = [];
 
-      // Collect data as it's available
+      // Store chunks as they come
       mediaRecorder.ondataavailable = e => recordedChunks.push(e.data);
 
-      // Once stopped, finalize audio blob
+      // When recording stops, create a Blob and set up player
       mediaRecorder.onstop = () => {
         lastAudioBlob = new Blob(recordedChunks, { type: "audio/webm" });
         document.getElementById("player").src = URL.createObjectURL(lastAudioBlob);
@@ -91,30 +93,30 @@
       mediaRecorder.start();
     }
 
-    // Stop recording if in progress
+    // Stop the recording process
     function stopRecording() {
       if (mediaRecorder && mediaRecorder.state !== "inactive") {
         mediaRecorder.stop();
       }
     }
 
-    // Upload recorded audio and trigger transcription + GPT feedback
+    // Upload recorded audio, fetch transcript & feedback, and save to history
     async function uploadRecording() {
       if (!lastAudioBlob) return alert("No recording found");
 
       const formData = new FormData();
       formData.append("file", lastAudioBlob, "recording.webm");
 
-      // Send audio to backend upload route
+      // Send audio to backend
       const res = await fetch("/upload", { method: "POST", body: formData });
       const data = await res.json();
 
-      // Update UI with results
+      // Display backend response in UI
       document.getElementById("transcription").value = data.transcription;
       document.getElementById("feedback").value = data.feedback;
       lastFilename = data.filename;
 
-      // Save session to history with optional user-defined tag
+      // Optionally store result in history with user tag
       const tag = document.getElementById("tag").value || "untagged";
       await fetch("/save-history", {
         method: "POST",
