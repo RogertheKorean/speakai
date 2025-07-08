@@ -1,16 +1,31 @@
-### models.py
-from sqlalchemy import Column, Integer, String, Text, DateTime
-from sqlalchemy.ext.declarative import declarative_base
-from datetime import datetime
+# models.py
+from typing import Optional, List
+from pydantic import BaseModel
 
-Base = declarative_base()
+class User(BaseModel):
+    username: str
+    full_name: Optional[str] = None
+    disabled: Optional[bool] = None
 
-class SessionHistory(Base):
-    __tablename__ = "history"
+class Token(BaseModel):
+    access_token: str
+    token_type: str
 
-    id = Column(Integer, primary_key=True, index=True)
-    filename = Column(String(200))
-    transcription = Column(Text)
-    feedback = Column(Text)
-    timestamp = Column(DateTime, default=datetime.utcnow)
-    tag = Column(String(100), default="untagged")
+class Page(BaseModel):
+    id: int
+    title: str
+    type: str
+    completed: bool = False
+    content: Optional[str] = None
+
+class Section(BaseModel):
+    id: int
+    title: str
+    completed: bool = False
+    pages: List[Page]
+
+class HistoryItem(BaseModel):
+    filename: str
+    transcription: str
+    feedback: str
+    tag: str

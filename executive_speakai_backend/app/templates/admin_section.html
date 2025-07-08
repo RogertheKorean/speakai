@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Add Section</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #121212;
+      color: #fff;
+      padding: 2rem;
+      max-width: 480px;
+      margin: 2rem auto;
+      border-radius: 18px;
+      box-shadow: 0 2px 16px #2228;
+    }
+    h1 { margin-bottom: 1.5rem; }
+    form {
+      background: #232323;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 8px #1117;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+      margin-bottom: 0.4rem;
+      color: #aad6fd;
+      font-size: 1.05rem;
+    }
+    select, input[type='text'] {
+      width: 100%;
+      padding: 0.6rem;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: 1px solid #666;
+      background: #232733;
+      color: #fff;
+      margin-bottom: 1rem;
+    }
+    button[type='submit'] {
+      background: #1e88e5;
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      padding: 0.7rem 2rem;
+      font-size: 1.05rem;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      box-shadow: 0 1px 4px #0004;
+    }
+    button[type='submit']:hover {
+      background: #2196f3;
+    }
+  </style>
+</head>
+<body>
+  <h1>➕ Add Section</h1>
+  <form action="/admin/section" method="post">
+    <label for="course_id">Course</label>
+    <select name="course_id" id="course_id" required>
+      {% for course in courses %}
+        <option value="{{ course[0] }}">{{ course[1] }}</option>
+      {% endfor %}
+    </select>
+    <label for="title">Section Title</label>
+    <input type="text" name="title" id="title" required placeholder="e.g., Day 2 or Week 3" />
+    <button type="submit">Add Section</button>
+  </form>
+</body>
+</html>
